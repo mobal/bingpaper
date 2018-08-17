@@ -40,7 +40,7 @@ interface ImageJSON {
 main();
 
 /**
- * Grab the latest daily Bing wallpapers.
+ * Download the latest daily Bing wallpapers.
  */
 function main(): void {
     out = path.normalize(argv.output);
@@ -56,14 +56,14 @@ function main(): void {
             console.log('You are up to date!');
         }
     }).catch((err: Error) => {
-        console.error(err);
+        console.error(`Error: ${err.message}`);
     });
 }
 
 /**
  * Download the given image.
- * @param url
- * @param f
+ * @param url URL of the given image
+ * @param f Path, where to save the image
  */
 function downloadImage(url: string, f: string): Promise<void> {
     const stream: fs.WriteStream = fs.createWriteStream(f);
@@ -82,11 +82,15 @@ function downloadImage(url: string, f: string): Promise<void> {
 
 /**
  * Filter the given URL list.
- * @param urlList List of image urls.
+ * @param urlList List of image urls
  */
 function filter(p: string, urlList: string[]): string[] {
-    if (!fs.lstatSync(p).isDirectory) {
-        throw new Error(`The given path ('${path}') is not a valid directory!`);
+    try {
+        if (!fs.lstatSync(p).isDirectory) {
+            throw new Error(`The given path ('${path}') is not a valid directory!`);
+        }
+    } catch (err) {
+        throw err;
     }
     fs.readdirSync(p, 'utf8').forEach((img: string) => {
         const current = img.substring(img.lastIndexOf('/') + 1, img.lastIndexOf('_'));
@@ -111,7 +115,7 @@ function getImage(url: string): void {
     const curr: string = url.replace(url.substring(url.lastIndexOf('_') + 1, url.lastIndexOf('.')), size);
     const fname: string = curr.substring(url.lastIndexOf('/') + 1, url.length + 1);
     downloadImage(`${bingUrl}/${curr}`, `${out}${fname}`).catch((err: Error) => {
-        console.error(err);
+        throw err;
     });
 }
 
