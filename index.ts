@@ -7,10 +7,11 @@ import * as yargs from 'yargs';
 const bingApiUrl: string = 'http://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8';
 const bingUrl: string = 'http://bing.com';
 
-let out: string;
-let size: string;
-
-const argv = yargs.option('output', {
+const argv = yargs.option('locale', {
+    alias: 'l',
+    default: 'auto',
+    describe: 'Localization',
+}).option('output', {
     alias: 'o',
     describe: 'Output path',
     require: true,
@@ -43,14 +44,13 @@ main();
  * Download the latest daily Bing wallpapers.
  */
 function main(): void {
-    out = path.normalize(argv.output);
-    size = argv.resolution;
-    getLatestImages('hu-hu').then((urlList: string[]) => {
-        return filter(out, urlList);
+    const destDir = path.normalize(argv.output);
+    getLatestImages(argv.locale).then((urlList: string[]) => {
+        return filter(path.normalize(destDir), urlList);
     }).then((filteredUrlList: string[]) => {
         if (filteredUrlList.length > 0) {
             filteredUrlList.forEach((url: string) => {
-                getImage(url);
+                getImage(url, destDir);
             });
         } else {
             console.log('You are up to date!');
@@ -86,11 +86,15 @@ function downloadImage(url: string, f: string): Promise<void> {
  */
 function filter(p: string, urlList: string[]): string[] {
     try {
-        if (!fs.lstatSync(p).isDirectory) {
-            throw new Error(`The given path ('${path}') is not a valid directory!`);
+        if (fs.lstatSync(p).isDirectory) {
+            //
         }
     } catch (err) {
-        throw err;
+        if (err.code === 'ENOENT') {
+            throw new Error(`The given path ('${p}') is not a valid directory!`);
+        } else {
+            throw err;
+        }
     }
     fs.readdirSync(p, 'utf8').forEach((img: string) => {
         const current = img.substring(img.lastIndexOf('/') + 1, img.lastIndexOf('_'));
@@ -108,13 +112,13 @@ function filter(p: string, urlList: string[]): string[] {
  * Download the given URL.
  * @param url URL of the image
  */
-function getImage(url: string): void {
+function getImage(url: string, p: string): void {
     // Replace the resolution with the specified value.
     // e.g., /az/hprichbg/rb/Altschlossfelsen_ROW14949645878_1366x768.jpg
     //     to /az/hprichbg/rb/Altschlossfelsen_ROW14949645878_1920x1080.jpg
-    const curr: string = url.replace(url.substring(url.lastIndexOf('_') + 1, url.lastIndexOf('.')), size);
+    const curr: string = url.replace(url.substring(url.lastIndexOf('_') + 1, url.lastIndexOf('.')), argv.resolution);
     const fname: string = curr.substring(url.lastIndexOf('/') + 1, url.length + 1);
-    downloadImage(`${bingUrl}/${curr}`, `${out}${fname}`).catch((err: Error) => {
+    downloadImage(`${bingUrl}/${curr}`, `${p}${fname}`).catch((err: Error) => {
         throw err;
     });
 }
