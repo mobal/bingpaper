@@ -21,7 +21,7 @@ const argv = yargs.option('locale', {
     describe: 'Image resolution',
 }).argv;
 
-interface ImageJSON {
+interface Image {
     startdate: string;
     fullstartdate: string;
     enddate: string;
@@ -131,7 +131,7 @@ function getLatestImages(locale: string = 'auto'): Promise<string[]> {
     return axios.get(`${bingApiUrl}&mk=${locale}`).then((res: AxiosResponse) => {
         const urlList: string[] = new Array<string>();
         if (res.status === 200 && res.data) {
-            (res.data.images as ImageJSON[]).forEach((img) => {
+            (res.data.images as Image[]).forEach((img) => {
                 urlList.push(img.url);
             });
         }
