@@ -21,9 +21,9 @@ tsc -p "./tsconfig.json"
 To run the application you must specify the **output path** and run using `node` (replace path with the desired directory path):
 
 ```console
-node index.js --output <path>
+node dist\index.js --output <path>
 ```
 
 ```console
-node index.js --locale hu-hu --output /home/mobal/Pictures/backgrounds/
+node dist\index.js --locale hu-hu --output /home/mobal/Pictures/backgrounds/
 ```
