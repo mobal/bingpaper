@@ -1,5 +1,5 @@
 {
-  "name": "bing",
+  "name": "bingpaper",
   "version": "1.0.0",
   "description": "Bing daily wallpaper downloader.",
   "main": "index.ts",
@@ -9,7 +9,8 @@
   "keywords": [
     "bing",
     "daily",
-    "downloader"
+    "downloader",
+    "wallpaper"
   ],
   "author": "Balázs Molnár",
   "license": "ISC",
