@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import { getLogger } from 'log4js';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -20,23 +21,8 @@ const argv = yargs.option('locale', {
     default: '1920x1080',
     describe: 'Image resolution',
 }).argv;
-
-interface Image {
-    startdate: string;
-    fullstartdate: string;
-    enddate: string;
-    url: string;
-    urlbase: string;
-    copyright: string;
-    copyrightLink: string;
-    quiz: string;
-    wp: boolean;
-    hsh: string;
-    drk: number;
-    top: number;
-    bot: number;
-    hs: string[];
-}
+const logger = getLogger();
+logger.level = 'debug';
 
 main();
 
@@ -44,7 +30,7 @@ main();
  * Download the latest daily Bing wallpapers.
  */
 function main(): void {
-    const destDir = path.normalize(argv.output);
+    const destDir = path.resolve(argv.output);
     getLatestImages(argv.locale).then((urlList: string[]) => {
         return filter(path.normalize(destDir), urlList);
     }).then((filteredUrlList: string[]) => {
@@ -53,10 +39,10 @@ function main(): void {
                 getImage(url, destDir);
             });
         } else {
-            console.log('You are up to date!');
+            logger.info('You are up to date!');
         }
     }).catch((err: Error) => {
-        console.error(`Error: ${err.message}`);
+        logger.error(`Error: ${err.message}`);
     });
 }
 
@@ -64,6 +50,7 @@ function main(): void {
  * Download the given image.
  * @param url URL of the given image
  * @param f Path, where to save the image
+ * @returns Promise<void>
  */
 function downloadImage(url: string, f: string): Promise<void> {
     const stream: fs.WriteStream = fs.createWriteStream(f);
@@ -71,7 +58,7 @@ function downloadImage(url: string, f: string): Promise<void> {
         if (res.status === 200) {
             res.data.pipe(stream);
             stream.on('finish', () => {
-                console.log(f);
+                logger.info(f);
                 stream.close();
             });
         }
@@ -81,8 +68,9 @@ function downloadImage(url: string, f: string): Promise<void> {
 }
 
 /**
- * Filter the given URL list.
+ * Filter the given URL list. Remove if previously downloaded.
  * @param urlList List of image urls
+ * @returns string[]
  */
 function filter(p: string, urlList: string[]): string[] {
     try {
@@ -109,7 +97,7 @@ function filter(p: string, urlList: string[]): string[] {
 }
 
 /**
- * Download the given URL.
+ * Download the given image.
  * @param url URL of the image
  */
 function getImage(url: string, p: string): void {
@@ -118,7 +106,7 @@ function getImage(url: string, p: string): void {
     //     to /az/hprichbg/rb/Altschlossfelsen_ROW14949645878_1920x1080.jpg
     const curr: string = url.replace(url.substring(url.lastIndexOf('_') + 1, url.lastIndexOf('.')), argv.resolution);
     const fname: string = curr.substring(url.lastIndexOf('/') + 1, url.length + 1);
-    downloadImage(`${bingUrl}/${curr}`, `${p}${fname}`).catch((err: Error) => {
+    downloadImage(`${bingUrl}/${curr}`, path.join(p, fname)).catch((err: Error) => {
         throw err;
     });
 }
@@ -126,6 +114,7 @@ function getImage(url: string, p: string): void {
 /**
  * Get the latest image URLs back to eight days.
  * @param locale Locale string
+ * @returns Promise<string[]>
  */
 function getLatestImages(locale: string = 'auto'): Promise<string[]> {
     return axios.get(`${bingApiUrl}&mk=${locale}`).then((res: AxiosResponse) => {
