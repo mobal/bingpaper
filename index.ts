@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { getLogger } from 'log4js';
+import { getLogger, Logger } from 'log4js';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -21,7 +21,8 @@ const argv = yargs.option('locale', {
     default: '1920x1080',
     describe: 'Image resolution',
 }).argv;
-const logger = getLogger();
+const logger: Logger = getLogger();
+
 logger.level = 'debug';
 
 main();
