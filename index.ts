@@ -21,7 +21,7 @@ const argv = yargs.option('locale', {
     default: '1920x1080',
     describe: 'Image resolution',
 }).argv;
-const logger: Logger = getLogger();
+const logger: Logger = getLogger('index');
 
 logger.level = 'debug';
 
