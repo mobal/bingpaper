@@ -74,26 +74,19 @@ function downloadImage(url: string, f: string): Promise<void> {
  * @returns string[]
  */
 function filter(p: string, urlList: string[]): string[] {
-    try {
-        if (fs.lstatSync(p).isDirectory) {
-            //
-        }
-    } catch (err) {
-        if (err.code === 'ENOENT') {
-            throw new Error(`The given path ('${p}') is not a valid directory!`);
-        } else {
-            throw err;
-        }
-    }
-    fs.readdirSync(p, 'utf8').forEach((img: string) => {
-        const current = img.substring(img.lastIndexOf('/') + 1, img.lastIndexOf('_'));
-        if (current) {
-            const match = urlList.filter((url: string) => url.includes(current))[0];
-            if (match) {
-                urlList.splice(urlList.indexOf(match), 1);
+    if (fs.existsSync(p)) {
+        fs.readdirSync(p, 'utf8').forEach((img: string) => {
+            const current = img.substring(img.lastIndexOf('/') + 1, img.lastIndexOf('_'));
+            if (current) {
+                const match = urlList.filter((url: string) => url.includes(current))[0];
+                if (match) {
+                    urlList.splice(urlList.indexOf(match), 1);
+                }
             }
-        }
-    });
+        });
+    } else {
+        throw new Error(`The given path ('${p}') is not a valid directory!`);
+    }
     return urlList;
 }
 
