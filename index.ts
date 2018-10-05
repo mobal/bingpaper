@@ -84,10 +84,9 @@ function filter(p: string, urlList: string[]): string[] {
                 }
             }
         });
-    } else {
-        throw new Error(`The given path ('${p}') is not a valid directory!`);
+        return urlList;
     }
-    return urlList;
+    throw new Error(`The given path ('${p}') is not a valid directory!`);
 }
 
 /**
