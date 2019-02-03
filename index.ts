@@ -11,15 +11,22 @@ const bingUrl: string = 'http://bing.com';
 const argv = yargs.option('locale', {
     alias: 'l',
     default: 'auto',
+    demand: false,
     describe: 'Localization',
+    nargs: 1,
+    type: 'string',
 }).option('output', {
     alias: 'o',
+    demand: true,
     describe: 'Output path',
-    require: true,
+    nargs: 1,
+    type: 'string',
 }).option('resolution', {
     alias: 'r',
     default: '1920x1080',
     describe: 'Image resolution',
+    nargs: 1,
+    type: 'string',
 }).argv;
 const logger: Logger = getLogger('index');
 
