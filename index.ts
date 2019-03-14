@@ -105,8 +105,8 @@ function getImage(url: string, p: string): void {
     // e.g., /az/hprichbg/rb/Altschlossfelsen_ROW14949645878_1366x768.jpg
     //     to /az/hprichbg/rb/Altschlossfelsen_ROW14949645878_1920x1080.jpg
     const curr: string = url.replace(url.substring(url.lastIndexOf('_') + 1, url.lastIndexOf('.')), argv.resolution);
-    const fname: string = curr.substring(url.lastIndexOf('/') + 1, url.length + 1);
-    downloadImage(`${bingUrl}/${curr}`, path.join(p, fname)).catch((err: Error) => {
+    const fname: string = curr.substring(url.indexOf('.') + 1, url.indexOf('&'));
+    downloadImage(bingUrl + curr, path.join(p, fname)).catch((err: Error) => {
         throw err;
     });
 }
