@@ -28,9 +28,9 @@ const argv = yargs.option('locale', {
     nargs: 1,
     type: 'string',
 }).argv;
-const logger: Logger = getLogger('index');
+const log: Logger = getLogger('index');
 
-logger.level = 'debug';
+log.level = 'debug';
 
 main();
 
@@ -47,10 +47,10 @@ function main(): void {
                 getImage(url, destDir);
             });
         } else {
-            logger.info('You are up to date!');
+            log.info('You are up to date!');
         }
     }).catch((err: Error) => {
-        logger.error(`Error: ${err.message}`);
+        log.error(`Error: ${err.message}`);
     });
 }
 
@@ -66,7 +66,7 @@ function downloadImage(url: string, f: string): Promise<void> {
         if (res.status === 200) {
             res.data.pipe(stream);
             stream.on('finish', () => {
-                logger.info(f);
+                log.info(f);
                 stream.close();
             });
         }
