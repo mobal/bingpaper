@@ -10,16 +10,10 @@ Clone this repository and install the dependencies using `npm`:
 npm i
 ```
 
-Compile using `npm` script:
+Compile using `npm`:
 
 ```console
-npm run-script compile
-```
-
-Compile using `tsc`:
-
-```console
-tsc -p tsconfig.json
+npm run build
 ```
 
 ## Usage
