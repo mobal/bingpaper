@@ -1,4 +1,4 @@
-interface Image {
+export interface Image {
     startdate: string;
     fullstartdate: string;
     enddate: string;
