@@ -1,6 +1,6 @@
-# bingpaper
+# Bingpaper
 
-An image downloader for the **Daily Bing Wallpaper**, written in **TypeScript**.
+An image downloader for the **daily Bing Wallpaper**, written in **TypeScript**. (**Bingpaper** = Bing + Wallpaper)
 
 ## Installation
 
