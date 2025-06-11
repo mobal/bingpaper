@@ -1,8 +1,9 @@
-# Bingpaper
+# 🌄 Bingpaper
 
-An image downloader for the **daily Bing Wallpaper**, written in **TypeScript**. (**Bingpaper** = Bing + Wallpaper)
+An image downloader for the **daily Bing Wallpaper**, written in **TypeScript**.  
+(**Bingpaper** = Bing + Wallpaper) 🖼️✨
 
-## Installation
+## 📦 Installation
 
 Clone this repository and install the dependencies using `npm`:
 
@@ -16,14 +17,16 @@ Compile using `npm`:
 npm run build
 ```
 
-## Usage
+## 🚀 Usage
 
 To run the application you must specify the **output path** and run using `node` (replace path with the desired directory path):
 
 ```console
-node dist\index.js --output <path>
+node dist\main.js --output <path>
 ```
 
+Example with locale and output path:
+
 ```console
-node dist\index.js --locale hu-hu --output /home/mobal/Pictures/backgrounds/
+node dist\main.js --locale hu-hu --output /home/mobal/Pictures/backgrounds/
 ```
