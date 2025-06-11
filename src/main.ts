@@ -1,34 +1,48 @@
-import axios, { AxiosResponse } from 'axios';
-import { getLogger, Logger } from 'log4js';
-import { Image } from './model/Image';
-
 import * as fs from 'fs';
 import * as path from 'path';
-import * as yargs from 'yargs';
 
-const bingApiUrl: string = 'http://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8';
-const bingUrl: string = 'http://bing.com';
+import axios from 'axios';
+import { getLogger, Logger } from 'log4js';
+import yargs from 'yargs';
 
-const argv = yargs.option('locale', {
-    alias: 'l',
-    default: 'auto',
-    demand: false,
-    describe: 'Localization',
-    nargs: 1,
-    type: 'string',
-}).option('output', {
-    alias: 'o',
-    demand: true,
-    describe: 'Output path',
-    nargs: 1,
-    type: 'string',
-}).option('resolution', {
-    alias: 'r',
-    default: '1920x1080',
-    describe: 'Image resolution',
-    nargs: 1,
-    type: 'string',
-}).argv;
+import { Image } from './model/Image';
+import {hideBin} from "yargs/helpers";
+
+/**
+ * This script downloads the latest Bing wallpapers.
+ * It can be used to download the latest wallpapers from Bing.
+ * The script will download the latest images and save them to the specified directory.
+ * The script will also filter out images that have already been downloaded.
+ * The script will also log the progress of the download.
+ */
+const bingApiUrl: string = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8';
+const bingUrl: string = 'https://bing.com';
+
+const argv = yargs()
+    .scriptName("bing-wallpaper-downloader")
+    .usage('$0 [options]')
+    .option('locale', {
+        alias: 'l',
+        default: 'auto',
+        demandOption: false,
+        describe: 'Localization',
+        nargs: 1,
+        type: 'string',
+    }).option('output', {
+        alias: 'o',
+        demandOption: true,
+        describe: 'Output path',
+        nargs: 1,
+        type: 'string',
+    }).option('resolution', {
+        alias: 'r',
+        default: '1920x1080',
+        describe: 'Image resolution',
+        nargs: 1,
+        type: 'string',
+    })
+    .help()
+    .parseSync(hideBin(process.argv));
 const log: Logger = getLogger('main');
 
 log.level = 'info';
@@ -61,9 +75,10 @@ function main(): void {
  * @param f Path, where to save the image
  * @returns Promise<void>
  */
-function downloadImage(url: string, f: string): Promise<void> {
+async function downloadImage(url: string, f: string): Promise<void> {
     const stream: fs.WriteStream = fs.createWriteStream(f);
-    return axios.get(url, {responseType: 'stream'}).then((res: AxiosResponse) => {
+    try {
+        const res = await axios.get(url, {responseType: 'stream'});
         if (res.status === 200) {
             res.data.pipe(stream);
             stream.on('finish', () => {
@@ -71,13 +86,17 @@ function downloadImage(url: string, f: string): Promise<void> {
                 stream.close();
             });
         }
-    }).catch((err: Error) => {
-        return Promise.reject(err);
-    });
+    } catch (err) {
+        if (err instanceof Error) {
+            log.error(`Failed to download image from ${url}: ${err.message}`);
+        }
+        throw err;
+    }
 }
 
 /**
  * Filter the given URL list. Remove if previously downloaded.
+ * @param p
  * @param urlList List of image urls
  * @returns string[]
  */
@@ -100,14 +119,15 @@ function filter(p: string, urlList: string[]): string[] {
 /**
  * Download the given image.
  * @param url URL of the image
+ * @param p
  */
 function getImage(url: string, p: string): void {
     // Replace the resolution with the specified value.
     // e.g., /az/hprichbg/rb/Altschlossfelsen_ROW14949645878_1366x768.jpg
     //     to /az/hprichbg/rb/Altschlossfelsen_ROW14949645878_1920x1080.jpg
-    const curr: string = url.replace(url.substring(url.lastIndexOf('_') + 1, url.lastIndexOf('.')), argv.resolution);
-    const fname: string = curr.substring(url.indexOf('.') + 1, url.indexOf('&'));
-    downloadImage(bingUrl + curr, path.join(p, fname)).catch((err: Error) => {
+    const imageName: string = url.replace(url.substring(url.lastIndexOf('_') + 1, url.lastIndexOf('.')), argv.resolution);
+    const fileName: string = imageName.substring(url.indexOf('.') + 1, url.indexOf('&'));
+    downloadImage(bingUrl + imageName, path.join(p, fileName)).catch((err: Error) => {
         throw err;
     });
 }
@@ -117,16 +137,20 @@ function getImage(url: string, p: string): void {
  * @param locale Locale string
  * @returns Promise<string[]>
  */
-function getLatestImages(locale: string = 'auto'): Promise<string[]> {
-    return axios.get(`${bingApiUrl}&mk=${locale}`).then((res: AxiosResponse) => {
+async function getLatestImages(locale: string = 'auto'): Promise<string[]> {
+    try {
+        const res = await axios.get(`${bingApiUrl}&mk=${locale}`);
         const urlList: string[] = new Array<string>();
         if (res.status === 200 && res.data) {
             (res.data.images as Image[]).forEach((img) => {
                 urlList.push(img.url);
             });
         }
-        return Promise.resolve(urlList);
-    }).catch((err: Error) => {
-        return Promise.reject(err);
-    });
+        return urlList;
+    } catch (err) {
+        if (err instanceof Error) {
+            log.error(`Failed to fetch the latest images: ${err.message}`);
+        }
+        throw err;
+    }
 }
